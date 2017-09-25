@@ -3,6 +3,7 @@
 import chess
 import requests
 import time
+import appscript
 
 def undefendent_pieces(color):
     undef_pieces = chess.SquareSet()
@@ -24,9 +25,13 @@ def get_fen_out_of_adress(adress):
     return extracted_fen
 
 def find_lichess_url():
-    import os
-    cmd = """osascript -e 'tell application \"Safari\" to get the URL of every tab of every window'"""
-    os.system(cmd)
+    lits_of_list_of_urls = appscript.app('Safari').windows.tabs.URL()
+    for list_of_urls in lits_of_list_of_urls:
+        for url in list_of_urls:
+            if ("https://lichess.org/" in url) & ("https://lichess.org/" != url):
+                return url
+    print ("No valid lichess game was found")
+    exit()
 
 def show_udef_pieces():
     print("Board: ")
@@ -43,13 +48,16 @@ def show_udef_pieces():
     print(undef_all)
 
 
-#find_lichess_url()
-url="https://lichess.org/Bp3hWC7MB9Y1"
+url = find_lichess_url()
+print ("playing ", url)
 old_fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 for i in range (1000):
     url_fen = get_fen_out_of_adress(url)
     if url_fen == old_fen:
+        checkurl = find_lichess_url()
+        if url != checkurl:
+            url = checkurl
         time.sleep(3)
         continue
     board = chess.Board(url_fen)
